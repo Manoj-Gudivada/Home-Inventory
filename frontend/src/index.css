@@ -11,3 +11,33 @@ input, select, textarea {
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better touch targets */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Prevent text selection on buttons */
+button {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Responsive typography */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* Tablet and up */
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}

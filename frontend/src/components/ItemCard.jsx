@@ -15,6 +15,8 @@ function zoneColor(zone) {
 
 export default function ItemCard({ item, onChange }) {
   const isLow = item.quantity <= item.threshold
+  const productName = item.product?.name || 'Unknown Product'
+  const brand = item.product?.brand
 
   const adjust = async (delta) => {
     const newQty = Math.max(0, item.quantity + delta)
@@ -31,7 +33,7 @@ export default function ItemCard({ item, onChange }) {
       {/* Item info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-gray-900 truncate">{item.name}</span>
+          <span className="font-semibold text-gray-900 truncate">{productName}</span>
           {isLow && (
             <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">
               Low
@@ -42,6 +44,7 @@ export default function ItemCard({ item, onChange }) {
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${zoneColor(item.zone)}`}>
             {item.zone}
           </span>
+          {brand && <span className="text-xs text-gray-400">{brand}</span>}
           <span className="text-xs text-gray-400">
             min: {item.threshold}
           </span>
@@ -53,7 +56,7 @@ export default function ItemCard({ item, onChange }) {
         <button
           onClick={() => adjust(-1)}
           className="w-12 h-12 rounded-full bg-red-100 text-red-700 text-2xl font-bold flex items-center justify-center active:bg-red-200 select-none"
-          aria-label={`Decrease ${item.name}`}
+          aria-label={`Decrease ${productName}`}
         >
           −
         </button>
@@ -63,7 +66,7 @@ export default function ItemCard({ item, onChange }) {
         <button
           onClick={() => adjust(1)}
           className="w-12 h-12 rounded-full bg-green-100 text-green-700 text-2xl font-bold flex items-center justify-center active:bg-green-200 select-none"
-          aria-label={`Increase ${item.name}`}
+          aria-label={`Increase ${productName}`}
         >
           +
         </button>

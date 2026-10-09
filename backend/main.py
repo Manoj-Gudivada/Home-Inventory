@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import Base, engine
-from routers import inventory, barcode, receipt
+from routers import auth, inventory, barcode, products, receipt
 
 # Create tables on startup
 Base.metadata.create_all(bind=engine)
@@ -13,7 +13,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="Home Inventory API",
     description="Full-stack home inventory management with barcode scanning and receipt extraction.",
-    version="1.0.0",
+    version="2.0.0",
 )
 
 # CORS — allow the Vite dev server and mobile access
@@ -23,7 +23,6 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:3000",
         "http://127.0.0.1:5173",
-        "http://192.168.0.0/16",  # mobile on same network
     ],
     allow_origin_regex=r"http://192\.168\.\d+\.\d+:\d+",
     allow_credentials=True,
@@ -32,8 +31,10 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router)
 app.include_router(inventory.router)
 app.include_router(barcode.router)
+app.include_router(products.router)
 app.include_router(receipt.router)
 
 

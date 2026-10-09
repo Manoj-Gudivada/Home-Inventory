@@ -26,7 +26,6 @@ export default function ReceiptReview({ items, onDone }) {
   }
 
   const handleSave = async () => {
-    // Filter out empty rows
     const valid = rows.filter((r) => r.inferred_name.trim())
     if (valid.length === 0) {
       alert('No items to save')
@@ -69,7 +68,6 @@ export default function ReceiptReview({ items, onDone }) {
         </div>
       )}
 
-      {/* Editable rows */}
       <div className="space-y-2">
         {rows.map((row, i) => (
           <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 space-y-2">
@@ -108,7 +106,6 @@ export default function ReceiptReview({ items, onDone }) {
         ))}
       </div>
 
-      {/* Add row button */}
       <button
         onClick={addRow}
         className="w-full border-2 border-dashed border-gray-300 text-gray-500 py-3 rounded-xl font-medium active:bg-gray-50"
@@ -116,7 +113,6 @@ export default function ReceiptReview({ items, onDone }) {
         + Add Item
       </button>
 
-      {/* Save */}
       <button
         onClick={handleSave}
         disabled={saving}

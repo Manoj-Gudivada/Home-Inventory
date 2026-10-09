@@ -54,7 +54,7 @@ export default function InventoryList() {
     ? Object.fromEntries(
         Object.entries(grouped).map(([zone, items]) => [
           zone,
-          items.filter((i) => i.name.toLowerCase().includes(filter.toLowerCase())),
+          items.filter((i) => i.product?.name?.toLowerCase().includes(filter.toLowerCase())),
         ]).filter(([, items]) => items.length > 0)
       )
     : grouped
@@ -107,7 +107,7 @@ export default function InventoryList() {
                 <button
                   onClick={() => handleDelete(item.id)}
                   className="absolute top-2 right-2 text-gray-300 hover:text-red-500 text-lg leading-none"
-                  aria-label={`Delete ${item.name}`}
+                  aria-label={`Delete ${item.product?.name || 'item'}`}
                 >
                   ×
                 </button>

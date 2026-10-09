@@ -74,6 +74,7 @@ export default function ShoppingList() {
       <div className="space-y-2">
         {items.map((item) => {
           const isChecked = checked.has(item.id)
+          const productName = item.product?.name || 'Unknown Product'
           return (
             <div
               key={item.id}
@@ -93,7 +94,7 @@ export default function ShoppingList() {
               </button>
               <div className="flex-1 min-w-0">
                 <p className={`font-medium ${isChecked ? 'line-through text-gray-400' : 'text-gray-900'}`}>
-                  {item.name}
+                  {productName}
                 </p>
                 <p className="text-xs text-gray-400">
                   {item.zone} · have {item.quantity}, need {item.threshold}

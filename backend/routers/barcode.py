@@ -1,67 +1,31 @@
-"""Barcode scanning and lookup endpoints."""
+"""Barcode scanning and lookup endpoints — database-first, no external APIs."""
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from auth import get_current_user
 from database import get_db
-from models import InventoryItem, BarcodeMapping
-from schemas import (
-    BarcodeLookupResponse,
-    BarcodeProductResponse,
-    BarcodeLinkRequest,
-    InventoryItemResponse,
-)
-from services.openfoodfacts import lookup_product
+from models import Product, User
+from schemas import BarcodeLookupResponse, BarcodeNotFoundResponse
 
 router = APIRouter(prefix="/barcode", tags=["barcode"])
 
 
-@router.get("/{barcode}", response_model=BarcodeLookupResponse)
-async def lookup_barcode(barcode: str, db: Session = Depends(get_db)):
-    """Look up a barcode. Returns linked item if known, else queries Open Food Facts.
+@router.get("/{barcode}")
+def lookup_barcode(
+    barcode: str,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    """Look up a barcode in the local product catalog.
 
-    Raises 404 if the barcode is not found locally or in Open Food Facts.
+    Returns the product if found, or a 404-style response if not.
+    No external API calls are made.
     """
-    # 1. Check local mapping
-    mapping = db.get(BarcodeMapping, barcode)
-    if mapping:
-        item = db.get(InventoryItem, mapping.item_id)
-        if item:
-            return BarcodeLookupResponse(
-                barcode=barcode,
-                item_id=item.id,
-                name=item.name,
-                quantity=item.quantity,
-                zone=item.zone,
-            )
-
-    # 2. Query Open Food Facts
-    product = await lookup_product(barcode)
+    product = db.query(Product).filter(Product.barcode == barcode).first()
     if product:
-        return BarcodeProductResponse(
-            barcode=barcode,
-            name=product["name"],
-            brand=product.get("brand"),
-        )
+        return BarcodeLookupResponse(barcode=barcode, product=product)
 
-    # 3. Not found
-    raise HTTPException(
-        status_code=404,
-        detail=f"Barcode {barcode} not found in local database or Open Food Facts.",
+    return BarcodeNotFoundResponse(
+        barcode=barcode,
+        message=f"Barcode '{barcode}' not found in catalog. You can add it as a new product.",
     )
-
-
-@router.post("/link", response_model=InventoryItemResponse)
-def link_barcode(payload: BarcodeLinkRequest, db: Session = Depends(get_db)):
-    """Link a barcode to an existing inventory item."""
-    item = db.get(InventoryItem, payload.item_id)
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-
-    existing = db.get(BarcodeMapping, payload.barcode)
-    if existing:
-        raise HTTPException(status_code=409, detail="Barcode already linked to another item")
-
-    db.add(BarcodeMapping(barcode=payload.barcode, item_id=payload.item_id))
-    db.commit()
-    db.refresh(item)
-    return item

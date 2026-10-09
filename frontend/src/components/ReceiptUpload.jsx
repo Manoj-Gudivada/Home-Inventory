@@ -23,7 +23,6 @@ export default function ReceiptUpload() {
       setError(err.message)
     } finally {
       setLoading(false)
-      // Reset input so same file can be re-selected
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
@@ -43,7 +42,6 @@ export default function ReceiptUpload() {
         Take a photo of your receipt and we'll extract the items.
       </p>
 
-      {/* Camera capture input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -60,7 +58,6 @@ export default function ReceiptUpload() {
         📷 Take Photo
       </label>
 
-      {/* Fallback: file picker without capture */}
       <label className="block w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium text-center cursor-pointer border border-gray-200">
         📁 Choose from Gallery
         <input

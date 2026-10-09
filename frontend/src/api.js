@@ -1,9 +1,31 @@
 const BASE_URL = '/api'
 
+let authToken = localStorage.getItem('token') || null
+
+export function setToken(token) {
+  authToken = token
+  if (token) {
+    localStorage.setItem('token', token)
+  } else {
+    localStorage.removeItem('token')
+  }
+}
+
+export function getToken() {
+  return authToken
+}
+
 async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  }
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`
+  }
   const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers,
     ...options,
   })
   if (!res.ok) {
@@ -14,7 +36,23 @@ async function request(path, options = {}) {
   return res.json()
 }
 
-// ── Inventory ──────────────────────────────────────────────────
+// ── Auth ──────────────────────────────────────────────────────
+
+export const register = (username, password) =>
+  request('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  })
+
+export const login = (username, password) =>
+  request('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  })
+
+export const getMe = () => request('/auth/me')
+
+// ── Inventory ─────────────────────────────────────────────────
 
 export const getInventory = () => request('/inventory')
 
@@ -35,24 +73,30 @@ export const bulkUpdate = (items) =>
     body: JSON.stringify({ items }),
   })
 
-// ── Barcode ────────────────────────────────────────────────────
+// ── Barcode ───────────────────────────────────────────────────
 
 export const lookupBarcode = (barcode) =>
   request(`/barcode/${encodeURIComponent(barcode)}`)
 
-export const linkBarcode = (barcode, itemId) =>
-  request('/barcode/link', {
-    method: 'POST',
-    body: JSON.stringify({ barcode, item_id: itemId }),
-  })
+// ── Products ──────────────────────────────────────────────────
 
-// ── Receipt ────────────────────────────────────────────────────
+export const getProducts = () => request('/products')
+
+export const createProduct = (data) =>
+  request('/products', { method: 'POST', body: JSON.stringify(data) })
+
+// ── Receipt ───────────────────────────────────────────────────
 
 export const extractReceipt = async (file) => {
   const formData = new FormData()
   formData.append('file', file)
+  const headers = {}
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`
+  }
   const res = await fetch(`${BASE_URL}/receipt/extract`, {
     method: 'POST',
+    headers,
     body: formData,
   })
   if (!res.ok) {
